@@ -1,383 +1,872 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LMU Telemetry Pro — telemetry & voice pit wall for Le Mans Ultimate</title>
-<meta name="description" content="Telemetry suite, in-game overlays and a voice race engineer for Le Mans Ultimate. Free, open source, runs locally.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,700;1,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>LMU Telemetry Pro — Documentation</title>
 <style>
 :root{
-  --bg:#0b0d12; --panel:#12151c; --panel2:#171b24; --line:#232833;
-  --txt:#e8ebf1; --muted:#8a8f9b;
-  --cyan:#45b4ef; --orange:#e8802a; --green:#37d67a; --violet:#9d6bff;
-  --gold:#e3b341;
+  --bg:#0f1218; --panel:#151a23; --line:#232b38; --fg:#dfe4ec;
+  --dim:#8a93a5; --acc:#f5c542; --acc2:#39b6e8; --ok:#4ec98a;
+  --warn:#e2a15e; --red:#ff1d43; --code:#1b2230; --sbw:272px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box; margin:0; padding:0}
 html{scroll-behavior:smooth}
-@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
-body{
-  background:var(--bg); color:var(--txt);
-  font:400 16px/1.65 "Inter",system-ui,sans-serif;
-  -webkit-font-smoothing:antialiased;
-}
-a{color:var(--cyan); text-decoration:none}
+body{background:var(--bg); color:var(--fg);
+  font:15px/1.65 "Segoe UI", system-ui, sans-serif}
+a{color:var(--acc2); text-decoration:none}
 a:hover{text-decoration:underline}
-a:focus-visible,button:focus-visible{outline:2px solid var(--cyan); outline-offset:3px; border-radius:4px}
-.wrap{max-width:960px; margin:0 auto; padding:0 22px}
 
-/* ── language toggle: body[data-lang] decides ── */
-body[data-lang="en"] [lang="it"]{display:none}
-body[data-lang="it"] [lang="en"]{display:none}
+/* ── selettore lingua: si vede SOLO la lingua attiva ── */
+.lang-en, .lang-it{display:none}
+body.it .lang-it{display:block}
+body.en .lang-en{display:block}
+nav .lang-it, nav .lang-en{display:none}
+body.it nav .lang-it{display:block}
+body.en nav .lang-en{display:block}
+.langbar{position:fixed; top:14px; right:18px; z-index:50}
+.langbar button{background:var(--panel); color:var(--dim);
+  border:1px solid var(--line); border-radius:8px; padding:5px 14px;
+  font:700 13px "Segoe UI"; cursor:pointer; margin-left:6px}
+.langbar button.on{color:#0f1218; background:var(--acc);
+  border-color:var(--acc)}
 
-/* ── header ── */
-header{
-  position:sticky; top:0; z-index:10;
-  background:rgba(11,13,18,.88); backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--line);
-}
-.nav{display:flex; align-items:center; gap:22px; height:56px}
-.brand{
-  font:800 20px/1 "Barlow Condensed",sans-serif; font-style:italic;
-  letter-spacing:.5px; color:var(--txt); text-transform:uppercase;
-}
-.brand b{color:var(--cyan)}
-.nav a.link{color:var(--muted); font-size:14px; font-weight:500}
-.nav a.link:hover{color:var(--txt); text-decoration:none}
-.nav .sp{flex:1}
-.langs{display:flex; border:1px solid var(--line); border-radius:6px; overflow:hidden}
-.langs button{
-  background:transparent; color:var(--muted); border:0; cursor:pointer;
-  font:600 12px "Inter",sans-serif; padding:5px 10px;
-}
-.langs button[aria-pressed="true"]{background:var(--panel2); color:var(--txt)}
+nav{position:fixed; top:0; left:0; bottom:0; width:var(--sbw);
+  background:var(--panel); border-right:1px solid var(--line);
+  overflow-y:auto; padding:22px 0 40px}
+nav .logo{padding:0 20px 14px; border-bottom:1px solid var(--line)}
+nav .logo b{display:block; font-size:17px; letter-spacing:.4px}
+nav .logo span{color:var(--dim); font-size:12px}
+nav h4{padding:16px 20px 6px; font-size:11px; letter-spacing:1.4px;
+  text-transform:uppercase; color:var(--dim)}
+nav a{display:block; padding:5px 20px; color:var(--fg); font-size:13.5px}
+nav a:hover{background:#1b222e; text-decoration:none}
+nav a.sub{padding-left:34px; color:var(--dim); font-size:12.5px}
 
-/* ── hero ── */
-.hero{padding:72px 0 34px; text-align:left}
-.eyebrow{
-  font:600 13px "JetBrains Mono",monospace; color:var(--green);
-  letter-spacing:2px; text-transform:uppercase;
-}
-h1{
-  font:800 clamp(44px,7vw,76px)/0.98 "Barlow Condensed",sans-serif;
-  font-style:italic; text-transform:uppercase; letter-spacing:.5px;
-  margin:14px 0 16px;
-}
-h1 .alt{color:var(--cyan)}
-.sub{max-width:620px; color:var(--muted); font-size:17px}
-.cta{display:flex; gap:12px; margin-top:26px; flex-wrap:wrap}
-.btn{
-  display:inline-block; padding:11px 22px; border-radius:8px;
-  font:700 15px "Inter",sans-serif; text-decoration:none;
-}
-.btn:hover{text-decoration:none; filter:brightness(1.12)}
-.btn-p{background:var(--cyan); color:#06202f}
-.btn-s{background:var(--panel2); color:var(--txt); border:1px solid var(--line)}
-.beta{
-  display:inline-block; margin-left:10px; vertical-align:middle;
-  font:700 11px "JetBrains Mono",monospace; letter-spacing:1px;
-  color:var(--gold); border:1px solid var(--gold); border-radius:4px;
-  padding:2px 7px; font-style:normal;
-}
-
-/* ── signature: the strategy strip ── */
-.strip{
-  margin:44px 0 0; padding:16px 20px 14px;
-  background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  display:flex; align-items:center; gap:18px; overflow-x:auto;
-  font:700 15px "Barlow Condensed",sans-serif; letter-spacing:.5px;
-}
-.cell{display:flex; flex-direction:column; align-items:center; gap:4px; min-width:88px}
-.cell .top{font:700 11px "JetBrains Mono",monospace; color:var(--muted); letter-spacing:1px}
-.cell .syms{display:flex; align-items:center; gap:6px}
-.chip{
-  width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
-  font:800 12px "Inter",sans-serif; color:var(--txt);
-}
-.chip.m{border:2.5px solid var(--gold)}
-.chip.w{border:2.5px solid var(--cyan)}
-.drop{
-  width:24px; height:24px; border-radius:50%; border:2.5px solid var(--violet);
-  display:grid; place-items:center;
-}
-.drop::after{content:""; width:8px; height:10px; background:var(--violet);
-  clip-path:polygon(50% 0, 100% 62%, 82% 100%, 18% 100%, 0 62%)}
-.val{color:var(--txt); font-size:15px}
-.sep{color:#4b515e; font-size:20px; font-weight:900}
-.strip-note{margin-top:8px; font:400 12px "Inter",sans-serif; color:var(--muted)}
-
-/* ── video ── */
-.video{margin:56px 0 0}
-.frame{
-  position:relative; width:100%; aspect-ratio:16/9;
-  background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  overflow:hidden;
-}
-.frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
-
-/* ── sections ── */
-section{padding:56px 0 0}
-h2{
-  font:700 30px/1.1 "Barlow Condensed",sans-serif; font-style:italic;
-  text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;
-}
-h2::before{content:"// "; color:var(--cyan)}
-.lead{color:var(--muted); max-width:640px; margin-bottom:22px}
-
-/* feature grid: role colours carry meaning (the app's own roles) */
-.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
-.card{
-  background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  padding:20px 20px 18px; border-top:3px solid var(--line);
-}
-.card.c1{border-top-color:var(--cyan)}
-.card.c2{border-top-color:var(--orange)}
-.card.c3{border-top-color:var(--green)}
-.card.c4{border-top-color:var(--violet)}
-.card h3{font:700 19px "Barlow Condensed",sans-serif; text-transform:uppercase;
-  letter-spacing:.5px; margin-bottom:8px}
-.card p{color:var(--muted); font-size:14.5px}
-
-/* docs */
-.doc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  padding:24px; margin-top:16px}
-.doc h3{font:700 20px "Barlow Condensed",sans-serif; text-transform:uppercase;
-  letter-spacing:.6px; margin:18px 0 8px}
-.doc h3:first-child{margin-top:0}
-.doc p, .doc li{color:#c6cad3; font-size:15px}
-.doc ol, .doc ul{padding-left:22px; display:grid; gap:6px; margin:8px 0}
-.doc code, pre{
-  font:600 13px "JetBrains Mono",monospace; color:var(--green);
-  background:#0d1016; border:1px solid var(--line); border-radius:6px;
-}
-.doc code{padding:1px 6px}
-pre{display:block; padding:14px 16px; overflow-x:auto; line-height:1.7; margin:10px 0}
-pre .k{color:var(--cyan)}
-.roles{width:100%; border-collapse:collapse; margin:10px 0}
-.roles td{border:1px solid var(--line); padding:8px 12px; font-size:14.5px}
-.roles .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px}
-
-/* footer */
-footer{margin-top:70px; border-top:1px solid var(--line); padding:26px 0 40px;
-  color:var(--muted); font-size:13px}
-footer a{color:var(--muted); text-decoration:underline}
-@media (max-width:640px){
-  .nav a.link{display:none}
-  .hero{padding-top:48px}
+main{margin-left:var(--sbw); max-width:900px; padding:36px 44px 120px}
+h1{font-size:30px; margin:0 0 6px; letter-spacing:.3px}
+h2{font-size:22px; margin:52px 0 12px; padding-top:18px;
+  border-top:1px solid var(--line); color:var(--acc)}
+h3{font-size:16.5px; margin:26px 0 8px; color:#eef1f6}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px 22px}
+li{margin:3px 0}
+.lead{color:var(--dim); font-size:16px; margin-bottom:24px}
+code,kbd{background:var(--code); border:1px solid var(--line);
+  border-radius:5px; padding:1px 7px; font:13px Consolas,monospace}
+pre{background:var(--code); border:1px solid var(--line); border-radius:9px;
+  padding:12px 16px; margin:0 0 14px; overflow-x:auto;
+  font:13px/1.5 Consolas,monospace}
+table{border-collapse:collapse; margin:0 0 16px; width:100%; font-size:13.5px}
+th,td{border:1px solid var(--line); padding:7px 11px; text-align:left;
+  vertical-align:top}
+th{background:#181f2a; color:#eef1f6}
+.box{border:1px solid var(--line); border-left:4px solid var(--acc2);
+  background:var(--panel); border-radius:8px; padding:12px 16px;
+  margin:0 0 16px}
+.box.warn{border-left-color:var(--warn)}
+.box.ok{border-left-color:var(--ok)}
+.box.red{border-left-color:var(--red)}
+.tag{display:inline-block; background:#1b2230; border:1px solid var(--line);
+  border-radius:20px; padding:1px 11px; font-size:12px; color:var(--dim);
+  margin-right:6px}
+footer{margin-top:70px; padding-top:18px; border-top:1px solid var(--line);
+  color:var(--dim); font-size:12.5px}
+@media (max-width:920px){
+  nav{position:static; width:auto; border-right:none;
+      border-bottom:1px solid var(--line)}
+  main{margin:0; padding:24px 20px 80px}
+  .langbar{position:static; text-align:right; padding:10px 16px 0}
 }
 </style>
 </head>
-<body data-lang="en">
+<body class="it">
 
-<header>
-  <div class="wrap nav">
-    <span class="brand">Telemetry <b>Pro</b></span>
-    <span class="sp"></span>
-    <a class="link" href="#features"><span lang="en">Features</span><span lang="it">Funzioni</span></a>
-    <a class="link" href="#docs"><span lang="en">Docs</span><span lang="it">Guida</span></a>
-    <a class="link" href="https://github.com/xvb-lab/Telemetry_Pro">GitHub</a>
-    <div class="langs" role="group" aria-label="Language">
-      <button id="b-en" aria-pressed="true"  onclick="setLang('en')">EN</button>
-      <button id="b-it" aria-pressed="false" onclick="setLang('it')">IT</button>
-    </div>
+<div class="langbar">
+  <button id="btn-it" class="on" onclick="setLang('it')">Italiano</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<nav>
+  <div class="logo">
+    <b>LMU Telemetry Pro</b>
+    <span>v0.3b · Documentation</span>
   </div>
-</header>
-
-<main class="wrap">
-
-  <!-- ── HERO ── -->
-  <div class="hero">
-    <div class="eyebrow">Le Mans Ultimate · Windows · Free &amp; open source</div>
-    <h1><span lang="en">Your pit wall,<br><span class="alt">on the radio.</span></span>
-        <span lang="it">Il tuo muretto,<br><span class="alt">in radio.</span></span>
-        <span class="beta">v0.2b BETA</span></h1>
-    <p class="sub" lang="en">Full telemetry, in-game overlays and a voice race engineer
-      that plans your stops, watches the weather, calls the flags — and learns from
-      your own laps. Everything runs locally on your PC.</p>
-    <p class="sub" lang="it">Telemetria completa, overlay in gioco e un ingegnere di
-      gara vocale che pianifica le soste, guarda il meteo, chiama le bandiere — e
-      impara dai tuoi giri. Tutto gira in locale sul tuo PC.</p>
-    <div class="cta">
-      <a class="btn btn-p" href="https://github.com/xvb-lab/Telemetry_Pro/releases/latest">
-        <span lang="en">Download the beta</span><span lang="it">Scarica la beta</span></a>
-      <a class="btn btn-s" href="https://github.com/xvb-lab/Telemetry_Pro">
-        <span lang="en">Source on GitHub</span><span lang="it">Sorgenti su GitHub</span></a>
-    </div>
-
-    <!-- signature: the strategy strip, straight from the overlay -->
-    <div class="strip" aria-hidden="true">
-      <div class="cell"><span class="top">NOW</span>
-        <span class="syms"><span class="val">96%</span><span class="drop"></span><span class="chip m">M</span></span></div>
-      <span class="sep">»</span>
-      <div class="cell"><span class="top">PIT1 · L20</span>
-        <span class="syms"><span class="chip w">W</span><span class="drop"></span><span class="val">72%</span></span></div>
-      <span class="sep">»</span>
-      <div class="cell"><span class="top">PIT2 · L63</span>
-        <span class="syms"><span class="chip m">M</span><span class="drop"></span><span class="val">100%</span></span></div>
-    </div>
-    <p class="strip-note" lang="en">The live strategy strip: current load, next stops, tyre and the exact number to set in the pit menu.</p>
-    <p class="strip-note" lang="it">La strip strategia live: carico attuale, prossime soste, gomma e il numero esatto da impostare nel pit-menu.</p>
+  <div class="lang-it">
+    <h4>Per iniziare</h4>
+    <a href="#intro">Che cos'è</a>
+    <a href="#install">Installazione</a>
+    <a class="sub" href="#plugin">Il plugin di LMU</a>
+    <a class="sub" href="#finestra">Finestra di gioco</a>
+    <a href="#primo-avvio">Primo avvio</a>
+    <h4>L'applicazione</h4>
+    <a href="#pagine">Le pagine, una per una</a>
+    <a href="#sessioni">Sessioni: dove e come</a>
+    <a href="#telemetria">Analizzare la telemetria</a>
+    <a href="#garage">Garage LIVE</a>
+    <a class="sub" href="#garage-nofa">Cosa NON fa</a>
+    <a href="#muretto">L'ingegnere (muretto)</a>
+    <a class="sub" href="#muretto-sessioni">Sessione per sessione</a>
+    <h4>In pista</h4>
+    <a href="#overlay">Gli overlay, uno per uno</a>
+    <a href="#online">Eventi online</a>
+    <a href="#raceweekly">Race Weekly e community</a>
+    <h4>Varie</h4>
+    <a href="#lingua">Lingua e opzioni</a>
+    <a href="#problemi">Problemi comuni</a>
   </div>
-
-  <!-- ── VIDEO ── -->
-  <div class="video">
-    <div class="frame">
-      <!-- Sostituisci VIDEO_ID con l'ID del tuo video YouTube (la parte dopo watch?v=) -->
-      <iframe src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
-              title="LMU Telemetry Pro — demo"
-              allow="accelerometer; encrypted-media; picture-in-picture; web-share"
-              allowfullscreen loading="lazy"></iframe>
-    </div>
+  <div class="lang-en">
+    <h4>Getting started</h4>
+    <a href="#intro">What it is</a>
+    <a href="#install">Installation</a>
+    <a class="sub" href="#plugin">The LMU plugin</a>
+    <a class="sub" href="#finestra">Game window</a>
+    <a href="#primo-avvio">First run</a>
+    <h4>The application</h4>
+    <a href="#pagine">Every page, one by one</a>
+    <a href="#sessioni">Sessions: where and how</a>
+    <a href="#telemetria">Analysing telemetry</a>
+    <a href="#garage">Live Garage</a>
+    <a class="sub" href="#garage-nofa">What it does NOT do</a>
+    <a href="#muretto">The engineer (pit wall)</a>
+    <a class="sub" href="#muretto-sessioni">Session by session</a>
+    <h4>On track</h4>
+    <a href="#overlay">The overlays, one by one</a>
+    <a href="#online">Online events</a>
+    <a href="#raceweekly">Race Weekly &amp; community</a>
+    <h4>Misc</h4>
+    <a href="#lingua">Language &amp; options</a>
+    <a href="#problemi">Troubleshooting</a>
   </div>
+</nav>
 
-  <!-- ── FEATURES ── -->
-  <section id="features">
-    <h2><span lang="en">What it does</span><span lang="it">Cosa fa</span></h2>
-    <div class="grid">
-      <div class="card c1">
-        <h3><span lang="en">Telemetry</span><span lang="it">Telemetria</span></h3>
-        <p lang="en">Every lap recorded and charted: speed, pedals, tyres, brakes,
-          suspension, G-G, delta. Scrub any chart and see the exact spot on the
-          track map. Compare laps side by side.</p>
-        <p lang="it">Ogni giro registrato e graficato: velocità, pedali, gomme,
-          freni, sospensioni, G-G, delta. Scorri un grafico e vedi il punto esatto
-          sulla mappa. Confronta i giri fianco a fianco.</p>
-      </div>
-      <div class="card c2">
-        <h3><span lang="en">Voice race engineer</span><span lang="it">Ingegnere vocale</span></h3>
-        <p lang="en">Three roles on the radio — Race, Strategy and Performance
-          Engineer — in Italian, English, Spanish or French. Stop plan with the
-          exact pit-menu number, weather calls, flags with absolute priority.</p>
-        <p lang="it">Tre ruoli in radio — Race, Strategy e Performance Engineer —
-          in italiano, inglese, spagnolo o francese. Piano soste col numero esatto
-          da pit-menu, chiamate meteo, bandiere con priorità assoluta.</p>
-      </div>
-      <div class="card c3">
-        <h3><span lang="en">It learns from you</span><span lang="it">Impara da te</span></h3>
-        <p lang="en">Fuel burn, tyre degradation, reference laps and sector times,
-          per track and class, dry and wet kept separate. The more you drive, the
-          sharper the strategy gets.</p>
-        <p lang="it">Consumo, degrado gomme, giri di riferimento e settori, per
-          pista e classe, asciutto e bagnato separati. Più giri, più la strategia
-          diventa precisa.</p>
-      </div>
-      <div class="card c4">
-        <h3><span lang="en">Overlays &amp; community</span><span lang="it">Overlay e community</span></h3>
-        <p lang="en">Standings, relative, map, tyres, HUD and more — all
-          configurable. Community reference times by class, track and condition,
-          and session sharing with your team.</p>
-        <p lang="it">Standings, relative, mappa, gomme, HUD e altro — tutto
-          configurabile. Tempi di riferimento community per classe, pista e
-          condizione, e condivisione sessioni col team.</p>
-      </div>
-    </div>
-  </section>
+<main>
 
-  <!-- ── DOCS ── -->
-  <section id="docs">
-    <h2><span lang="en">Quick guide</span><span lang="it">Guida rapida</span></h2>
-    <p class="lead" lang="en">The full bilingual documentation lives in the
-      <a href="https://github.com/xvb-lab/Telemetry_Pro#readme">README</a>.
-      This is the short version.</p>
-    <p class="lead" lang="it">La documentazione completa bilingue è nel
-      <a href="https://github.com/xvb-lab/Telemetry_Pro#readme">README</a>.
-      Questa è la versione corta.</p>
+<!-- ══════════════════════════ ITALIANO ══════════════════════════ -->
+<div class="lang-it">
 
-    <div class="doc" lang="en">
-      <h3>Install</h3>
-      <ol>
-        <li>Download the zip from the <a href="https://github.com/xvb-lab/Telemetry_Pro/releases/latest">latest release</a>.</li>
-        <li>Extract the <b>whole folder</b> anywhere (the exe alone will not run).</li>
-        <li>Run <code>LMU_TelemetryPro.exe</code>. If SmartScreen warns: <i>More info → Run anyway</i>.</li>
-      </ol>
-      <h3>Quick start</h3>
-      <p>Start Le Mans Ultimate and go on track. No buttons: the app detects the
-        session, records every lap and opens the right live view. The engineer
-        starts talking at the race briefing.</p>
-      <h3>The three voices</h3>
-      <table class="roles">
-        <tr><td><span class="dot" style="background:var(--orange)"></span>Race Engineer</td>
-            <td>car status, tyres, damage, box calls</td></tr>
-        <tr><td><span class="dot" style="background:var(--cyan)"></span>Strategy Engineer</td>
-            <td>stop plan, fuel / virtual energy, weather</td></tr>
-        <tr><td><span class="dot" style="background:var(--green)"></span>Performance Engineer</td>
-            <td>lap times, sectors, where you lose time</td></tr>
-      </table>
-      <h3>Where your data lives</h3>
-<pre><span class="k">%APPDATA%\LMU_TelemetryPro</span>
-├── logs\             ← recorded sessions
-├── refs\             ← your reference laps
-├── learn\            ← what the engineer has learned
-└── team_sessions\    ← sessions from team mates</pre>
-      <h3>Troubleshooting</h3>
-      <ul>
-        <li><b>No voice on the radio</b> — the TTS voices need an internet connection.</li>
-        <li><b>The exe doesn't start</b> — check <code>crash_log.txt</code> next to the exe.</li>
-        <li><b>Anything else</b> — open an <a href="https://github.com/xvb-lab/Telemetry_Pro/issues">Issue</a>: every report helps.</li>
-      </ul>
-    </div>
+<h1 id="intro">LMU Telemetry Pro</h1>
+<p class="lead">Muretto vocale, telemetria professionale, garage live e
+overlay broadcast per <b>Le Mans Ultimate</b>. Gratuito, open source,
+fatto dalla community. Regola fondante: <b>ogni dato viene dal gioco</b> —
+quello che LMU non dice, l'app non lo inventa.</p>
+<table>
+<tr><th>Componente</th><th>Cosa fa</th></tr>
+<tr><td><b>App</b></td><td>Sessioni, telemetria, garage, classifiche,
+opzioni.</td></tr>
+<tr><td><b>Muretto</b></td><td>Ingegnere a voce: strategia, consumi,
+gomme, pioggia, bandiere, penalità.</td></tr>
+<tr><td><b>Overlay</b></td><td>Grafiche stile regia WEC sopra il
+gioco, ognuna in un processo suo.</td></tr>
+<tr><td><b>Community</b></td><td>Classifiche online fra utenti
+dell'app: riferimenti, hyperpole, Race Weekly.</td></tr>
+</table>
 
-    <div class="doc" lang="it">
-      <h3>Installazione</h3>
-      <ol>
-        <li>Scarica lo zip dall'<a href="https://github.com/xvb-lab/Telemetry_Pro/releases/latest">ultima release</a>.</li>
-        <li>Estrai <b>l'intera cartella</b> dove vuoi (l'exe da solo non parte).</li>
-        <li>Avvia <code>LMU_TelemetryPro.exe</code>. Se SmartScreen avvisa: <i>Ulteriori informazioni → Esegui comunque</i>.</li>
-      </ol>
-      <h3>Avvio rapido</h3>
-      <p>Avvia Le Mans Ultimate e vai in pista. Nessun pulsante: l'app rileva la
-        sessione, registra ogni giro e apre la vista live giusta. L'ingegnere
-        inizia a parlare col briefing di gara.</p>
-      <h3>Le tre voci</h3>
-      <table class="roles">
-        <tr><td><span class="dot" style="background:var(--orange)"></span>Race Engineer</td>
-            <td>stato vettura, gomme, danni, chiamate box</td></tr>
-        <tr><td><span class="dot" style="background:var(--cyan)"></span>Strategy Engineer</td>
-            <td>piano soste, benzina / energia virtuale, meteo</td></tr>
-        <tr><td><span class="dot" style="background:var(--green)"></span>Performance Engineer</td>
-            <td>tempi, settori, dove perdi tempo</td></tr>
-      </table>
-      <h3>Dove vivono i tuoi dati</h3>
-<pre><span class="k">%APPDATA%\LMU_TelemetryPro</span>
-├── logs\             ← sessioni registrate
-├── refs\             ← i tuoi giri di riferimento
-├── learn\            ← ciò che l'ingegnere ha imparato
-└── team_sessions\    ← sessioni dei compagni</pre>
-      <h3>Problemi comuni</h3>
-      <ul>
-        <li><b>La radio non parla</b> — le voci TTS richiedono la connessione a internet.</li>
-        <li><b>L'exe non parte</b> — guarda <code>crash_log.txt</code> accanto all'exe.</li>
-        <li><b>Qualsiasi altra cosa</b> — apri una <a href="https://github.com/xvb-lab/Telemetry_Pro/issues">Issue</a>: ogni segnalazione aiuta.</li>
-      </ul>
-    </div>
-  </section>
+<h2 id="install">Installazione</h2>
+<ol>
+<li>Scarica lo zip dall'ultima
+<a href="https://github.com/xvb-lab/Telemetry_Pro_Muretto/releases">release
+GitHub</a>.</li>
+<li>Scompattalo dove vuoi — la cartella va tenuta <b>intera</b> (l'exe
+usa la sua <code>_internal</code>).</li>
+<li>Avvia <code>LMU_TelemetryPro.exe</code>.</li>
+</ol>
+<div class="box warn"><b>Windows blocca l'avvio?</b>
+L'exe non è firmato digitalmente. <b>SmartScreen</b>: «Ulteriori
+informazioni» → «Esegui comunque»; oppure, prima di scompattare, tasto
+destro sullo zip → Proprietà → <b>Sblocca</b>. <b>Smart App Control</b>
+(Windows 11 recenti) invece blocca gli exe non firmati <i>senza</i>
+possibilità di eccezione: si può solo disattivare da Sicurezza di
+Windows → Controllo di app e browser (scelta irreversibile — valuta
+tu).</div>
+
+<h3 id="plugin">Il plugin di LMU (dati condivisi)</h3>
+<p>L'app legge il gioco da due canali: la <b>REST API</b> integrata di
+LMU (porta <code>6397</code>, attiva di serie: nulla da fare) e la
+<b>shared memory</b>, che richiede il plugin
+<code>rFactor2SharedMemoryMapPlugin64.dll</code> — lo stesso usato da
+TinyPedal, SimHub e simili. Se hai già uno di questi strumenti
+funzionante, sei a posto.</p>
+<p><b>Verifica in 2 passi</b> (percorsi dell'installazione Steam
+standard):</p>
+<ol>
+<li>Il file
+<code>...\steamapps\common\Le Mans Ultimate\Plugins\rFactor2SharedMemoryMapPlugin64.dll</code>
+esiste? Se manca, scaricalo dal progetto
+<a href="https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin">rF2
+Shared Memory Map Plugin</a> (versione 64 bit) e copialo lì.</li>
+<li>Apri
+<code>...\Le Mans Ultimate\UserData\player\CustomPluginVariables.JSON</code>
+e controlla che il plugin risulti attivo:
+<pre>"rFactor2SharedMemoryMapPlugin64.dll": {
+    " Enabled": 1,
+    ...
+}</pre>
+Se è <code>0</code>, mettilo a <code>1</code> a gioco chiuso (oppure
+attivalo dal menu dei plugin del gioco, che scrive questo stesso
+file).</li>
+</ol>
+<div class="box ok"><b>Come capisco che funziona?</b> Apri il gioco,
+entra in una sessione e avvia l'app: se la sessione live viene
+agganciata da sola, i due canali parlano. In caso di dubbio, a gioco
+acceso apri nel browser
+<code>http://localhost:6397/swagger-schema.json</code>: se risponde,
+la REST c'è.</div>
+
+<h3 id="finestra">Finestra di gioco</h3>
+<p>Per vedere gli overlay <b>sopra</b> il gioco, LMU va messo in
+<b>Borderless</b> (o Windowed) dalle impostazioni video — in fullscreen
+esclusivo Windows non permette ad altre finestre di stare davanti. Con
+più monitor puoi anche tenere gli overlay su uno schermo e il gioco
+sull'altro.</p>
+
+<h2 id="primo-avvio">Primo avvio</h2>
+<ul>
+<li>Non serve configurare nulla: apri l'app, apri il gioco, vai in
+pista. L'app <b>rileva la sessione da sola</b> e registra ogni giro.</li>
+<li>Il <b>video di apertura</b> si salta con ENTRA e si disattiva dalle
+Options.</li>
+<li>Musica, effetti e volume si regolano dalle Options; la musica
+sfuma da sola quando entri in sessione.</li>
+<li>La <b>lingua</b> (EN/IT) si sceglie dalle Options con le
+bandierine; si applica al riavvio.</li>
+<li>La prima apertura di alcune pagine è più lenta (l'antivirus
+esamina l'exe appena installato); dalla seconda tutto è
+immediato.</li>
+</ul>
+
+<h2 id="pagine">Le pagine, una per una</h2>
+<h3>Home</h3>
+<p>In alto la tua carta pilota: licenza e safety, casco (il <b>+</b>
+apre i <b>Gadgets</b>), nome, contatori delle sessioni e dei tempi in
+community, ultima sessione con la freccia per riaprirla. Al centro le
+<b>card degli eventi online</b> di LMU in partenza (ORA / IN ARRIVO,
+filtri per nazione, CAMPIONATO, TUTTI, EXTRA). In basso il footer con
+gli interruttori rapidi (schermo intero, opzioni, crediti).</p>
+<h3>Gadgets (caschi)</h3>
+<p>La collezione dei caschi: quelli <b>sbloccati</b> dal tuo punteggio
+carriera si vedono e si indossano col click (vanno sul profilo e sui
+tuoi record online); quelli <b>bloccati</b> restano misteriosi — box
+col «?» e lucchetto rosso — e si svelano salendo di punteggio.</p>
+<h3>Menu circuiti e pagina del circuito</h3>
+<p>Dalla home entri nel menu circuiti: card con foto per ogni pista e
+layout. La pagina del singolo circuito ha la <b>mappa vera</b>
+(registrata in pista: settori, curve numerate, punti di frenata LICO
+attivabili dalle legende) e la colonna destra con le classifiche
+(<a href="#raceweekly">community</a>), le <b>regole</b> dell'evento e
+il <b>diario pista</b>: cosa l'app conosce di quel circuito — mappa,
+censimento curve, LICO, profilo di consumo appreso, best personali,
+storico gare, sessioni.</p>
+<h3>Sessions / Stint</h3>
+<p>La vita in pista: a sinistra le card delle tue sessioni, a destra
+il board con stint e giri. Da qui si aprono garage, stint e
+telemetria. In sessione live la pagina si aggancia da sola.</p>
+<h3>Options</h3>
+<p>Lingua, musica e volume, effetti, video di apertura, blocco
+overlay, ingegnere on/off, e le regolazioni delle singole pagine.</p>
+
+<h2 id="sessioni">Sessioni: dove sono e come si usano</h2>
+<ul>
+<li>Ogni uscita in pista crea una <b>sessione</b> (file locale in
+<code>%APPDATA%\LMU_TelemetryPro\logs</code>): giri, settori, meteo,
+gomme, consumi, posizione — tutto quello che il gioco espone,
+campionato a 64 Hz.</li>
+<li>Le card si filtrano per pista, layout e classe. Una sessione senza
+nemmeno un giro cronometrato non viene mostrata.</li>
+<li>Sul board, il <b>cerchietto</b> di un giro lo seleziona
+(<b>SEL</b>); un secondo giro diventa il confronto (<b>CMP</b>). I
+giri della condizione opposta (asciutto/bagnato) si oscurano: si
+confronta solo il confrontabile.</li>
+<li><b>Team</b>: le sessioni si esportano/importano in zip per
+condividerle con la squadra.</li>
+</ul>
+
+<h2 id="telemetria">Analizzare la telemetria</h2>
+<ul>
+<li><b>Worksheet</b>: più canali impilati (velocità, sterzo, marcia,
+pedali…), tutti sincronizzati.</li>
+<li><b>Canali dedicati</b>: Speed, Steering, Gear, RPM, Tyres, Brakes,
+Suspension, Pedals, G-G, Aids (TC/ABS/bias), Delta, consumi VE / Fuel
+/ Hybrid.</li>
+<li><b>Scrub</b>: muovi il mouse su un grafico o sulla mappa — la
+linea segue, la mappa evidenzia il punto, leggi i valori esatti.</li>
+<li><b>Cursori A/B</b>: <kbd>Shift</kbd>+click piazza A (arancione),
+un secondo B (ciano); in alto a destra ΔX in metri e Δ del canale.
+Zoom e cursori sono sincronizzati su tutti i grafici.</li>
+<li><b>Gomme per ruota</b>: angolo (FL/FR/RL/RR) + strato (Surface /
+Carcass / Inner / pressione / usura), con asfalto °C e pioggia %
+lungo il giro.</li>
+<li><b>Replay</b>: play sulla mappa vera, macchinina sincronizzata coi
+grafici, fino a 8×.</li>
+<li><b>REF</b>: confronto col tuo best locale o col riferimento
+community (classe + pista + condizione; oro = asciutto, blu =
+bagnato).</li>
+<li><b>Debrief</b>: il referto dell'ingegnere sulla sessione — guida,
+grip e ammortizzatori, giri migliori.</li>
+</ul>
+
+<h2 id="garage">Garage LIVE</h2>
+<p>Il garage <b>scrive davvero nel gioco</b> via REST, come se usassi
+il suo menu — ma con una vista sola e le automazioni del team.</p>
+<ul>
+<li><b>Foglio setup</b> a schede (Trasmissione, Ruote e freni,
+Sospensioni, Ammortizzatori, Telaio e aero): frecce ‹ › su ogni voce,
+valori vivi dal gioco, voci non regolabili opache, RESET per
+sezione.</li>
+<li><b>Gomme</b>: la macchina dall'alto con le quattro montate
+(mescola, usura, temperatura). Click su una ruota → menu dei set per
+quell'angolo; <b>FIT ALL ×4</b> monta una mescola nuova ovunque. Il
+magazzino elenca i treni dell'evento con usura e codici.</li>
+<li><b>Meccanico</b>: registro a sinistra — ogni modifica scritta
+(«Bias freni 52.3 → 53.5»), automazioni raccontate.</li>
+<li><b>Automazioni</b> (tab Options del garage): AUTO SETUP (applica i
+consigli dell'ingegnere), AUTO TYRES (treno giusto al cambio
+sessione), AUTO FUEL/ENERGY (benzina o energia per la sessione: quali
+= giri contati e macchina leggera; gara = giri + formazione + giro
+della bandiera), AUTO WET (pioggia: più TC/ABS, potenza dolce).</li>
+<li><b>Test di prova</b> (in pratica): scegli la prova — hotlap, long
+run… — e la squadra prepara la macchina per quella durata.</li>
+<li><b>Setup salvati</b>: istantanee per macchina+pista richiamabili
+dalla scheda Setups.</li>
+<li><b>Eventi a setup fisso</b> (online): il garage rispetta voce per
+voce ciò che il server dichiara libero — di norma energia/benzina,
+bias, mescole ed elettronica restano vivi, il resto è col lucchetto
+«Setup fisso — bloccato».</li>
+</ul>
+<h3 id="garage-nofa">Cosa NON fa (per scelta)</h3>
+<ul>
+<li><b>Niente rabbocco dalla UI in pista</b>: in garage la benzina si
+<i>imposta</i> al valore che serve; il rabbocco è faccenda del pit
+stop, nel gioco.</li>
+<li><b>Niente assetti inventati</b>: l'app non ha tabelle magiche di
+setup per circuito — i consigli vengono dalla TUA telemetria, e il
+meccanico li applica solo se glielo permetti (AUTO SETUP).</li>
+<li><b>Niente scrittura a gioco assente</b>: senza LMU acceso il
+garage mostra e basta.</li>
+</ul>
+
+<h2 id="muretto">L'ingegnere (muretto)</h2>
+<p>Un ingegnere di pista <b>a voce</b> (in italiano): legge la
+telemetria in tempo reale e ti parla via radio. Si accende dalle
+Options / pagina Overlay e gira in un processo separato: non ruba
+fluidità all'app.</p>
+<ul>
+<li><b>Strategia</b>: al via calcola giri, stint, soste, autonomia —
+sul consumo reale della tua macchina, non su stime di categoria.</li>
+<li><b>Gestione</b>: passo e consumi, dove perdi (settori vs il tuo
+best), report periodico gomme/carburante, chiamata box intelligente
+(gomme finite, foratura, benzina, penalità, danni).</li>
+<li><b>Pioggia</b>: avvisa all'arrivo, chiama le wet su quanto è
+bagnata la pista <i>sotto le tue ruote</i>, benzina alla sosta,
+settore più bagnato, finestra slick sulla linea asciutta. Se resti
+fuori, prende atto e ti supporta.</li>
+<li><b>Bandiere</b>: gialla solo con un'auto lenta nei 500 m davanti
+(mai per settori lontani), blu a gruppi, distacchi e undercut.</li>
+<li><b>Penalità</b>: annuncia solo le <b>tue</b>, con tipo e procedura;
+quelle dei rivali le cita per strategia, col nome.</li>
+<li><b>Impara</b>: per pista e classe memorizza consumo, degrado,
+best e settori (asciutto e bagnato separati). Più giri puliti fai,
+più è preciso.</li>
+</ul>
+<div class="box"><b>Filosofia</b> — il muretto <b>informa, il pilota
+decide</b>: gli ordini secchi sono riservati alla sicurezza (wet
+obbligatorie, foratura, danno grave). Mai consigli contro lo stato
+reale della macchina.</div>
+<h3 id="muretto-sessioni">Sessione per sessione</h3>
+<table>
+<tr><th>Sessione</th><th>Cosa fa</th><th>Cosa non fa</th></tr>
+<tr><td><b>Pratica</b></td><td>Riferimenti sui settori, letture
+gomme/freni, prepara i test scelti dal garage; impara pista e
+consumi.</td><td>Niente strategia gara, niente chiamate box
+strategiche.</td></tr>
+<tr><td><b>Qualifica</b></td><td>Riferimenti sul giro e sui settori;
+il meccanico carica l'energia per i tentativi (out-lap +
+tentativi).</td><td>Niente chiacchiere: la radio resta
+essenziale.</td></tr>
+<tr><td><b>Gara</b></td><td>Briefing con la strategia, gestione
+completa, pioggia, bandiere, penalità, soste, fine gara.</td>
+<td>Non prende decisioni al posto tuo: consiglia; il «box box box»
+secco è solo sicurezza.</td></tr>
+</table>
+
+<h2 id="overlay">Gli overlay, uno per uno</h2>
+<p>Si accendono dalla pagina <b>Overlay</b>; ognuno è un processo suo,
+si trascina dove vuoi e il lucchetto in alto blocca le posizioni. Sono
+<b>sempre in inglese</b> (stile broadcast). Ogni overlay ha la sua
+scheda di configurazione (dimensioni, opzioni).</p>
+<table>
+<tr><th>Overlay</th><th>Cosa mostra</th><th>Note per sessione</th></tr>
+<tr><td><b>Leaderboard</b></td><td>Classifica in stile regia WEC:
+colori di classe, tacche settori, pit e gomme, battaglie col distacco
+vivo, giostra di pagine (mescole, energia, griglia,
+presentazione).</td><td>In gara: primo giro coi nomi
+(presentazione), gap dal giro 2; in prova/quali: tempi e run.</td></tr>
+<tr><td><b>Current Gap</b></td><td>Il duello: chi precede e chi segue
+con gap vivi, ultimi giri, posizioni su/giù, gomme, energia, bandiere
+dei piloti.</td><td>In prova/quali i gap sono sui best.</td></tr>
+<tr><td><b>Ticker</b></td><td>La barra scorrevole con gli intervalli
+di tutte le auto, come in TV.</td><td>—</td></tr>
+<tr><td><b>Dashboard</b></td><td>Cruscotto: marcia, velocità, gomme e
+freni per ruota coi colori delle finestre vere, consumi, MFD a pagine
+(lingua propria).</td><td>—</td></tr>
+<tr><td><b>Race Control</b></td><td>Direzione gara: penalità (solo le
+tue), track limits coi punti veri del gioco, verdetti.</td>
+<td>In prova/quali segnala il giro invalidato.</td></tr>
+<tr><td><b>Standings / Relative</b></td><td>Classifica compatta e
+distacchi attorno a te, coi settori WEC.</td><td>—</td></tr>
+<tr><td><b>Map</b></td><td>Il tracciato vero con le macchinine
+vive.</td><td>—</td></tr>
+<tr><td><b>Onboard / Mini telemetry / Flag / barre 2024</b></td>
+<td>Cornice onboard, mini-grafici dei pedali, bandiere a schermo,
+strumenti di contorno.</td><td>La bandiera gialla segue la regola dei
+500 m davanti.</td></tr>
+</table>
+
+<h2 id="online">Eventi online</h2>
+<ul>
+<li>Le card della home mostrano gli eventi LMU in partenza; dentro un
+evento l'app aggancia da sola pratica, qualifica e gara.</li>
+<li>Negli eventi <b>a setup fisso</b> il garage rispetta le voci
+libere del server (vedi <a href="#garage">Garage</a>).</li>
+<li>I <b>risultati contano</b>: qualifica e gara online alimentano le
+classifiche community e la Race Weekly. Le pratiche no.</li>
+<li>La <b>bandiera</b> della tua nazionalità (dal profilo LMU) compare
+accanto al tuo nome; gli avversari che usano l'app pubblicano la loro
+— il gioco quella degli altri non la espone, e l'app non inventa.</li>
+</ul>
+
+<h2 id="raceweekly">Race Weekly e community</h2>
+<p>Tre classifiche sulla pagina del circuito:</p>
+<table>
+<tr><th>Vista</th><th>Contenuto</th></tr>
+<tr><td>🌐 <b>Community — Reference</b></td><td>I best di sempre degli
+utenti dell'app, per classe e condizione.</td></tr>
+<tr><td>⏱ <b>Hyperpole settimanale</b></td><td>Il giro secco più
+veloce della settimana in qualifica online; azzeramento
+settimanale.</td></tr>
+<tr><td>🏆 <b>Race Weekly</b></td><td>Il campionato a punti della
+settimana.</td></tr>
+</table>
+<h3>Il regolamento della Race Weekly</h3>
+<ul>
+<li><b>3 tentativi</b> a settimana per pista e classe.</li>
+<li><b>Un tentativo = un evento intero</b>: punti gara dalla posizione
+d'arrivo (P1 25 · P2 18 · P3 15 · P4 12 · P5 10 · P6 8 · P7 6 · P8 4
+· P9 2 · P10 1) <b>più</b> il bonus hyperpole della qualifica dello
+stesso evento (P1 10 · P2 9 · … · P10 1).</li>
+<li>Vale il <b>miglior tentativo intero</b>, con la macchina di quel
+tentativo. Niente somme fra gare diverse: un P2 senza hyperpole (18)
+perde contro un P4 con una bella qualifica (12+8=20). A parità, vale
+il tentativo più recente.</li>
+<li>I risultati costruiscono <b>rating</b>, licenza (Rookie→Pro, col
+colore del casco) e <b>safety</b> (i contatti pesano).</li>
+</ul>
+
+<h2 id="lingua">Lingua e opzioni</h2>
+<ul>
+<li><b>Lingua dell'app</b>: Options → bandierine 🇬🇧/🇮🇹, si applica al
+riavvio. Le sigle tecniche (TC, ABS, bias, mescole) restano
+invariate; gli overlay restano in inglese; la radio parla
+italiano.</li>
+<li><b>Dashboard</b>: lingua propria, dal menu dell'overlay.</li>
+<li><b>Musica / effetti / intro / blocco overlay</b>: tutti dalle
+Options.</li>
+</ul>
+
+<h2 id="problemi">Problemi comuni</h2>
+<table>
+<tr><th>Sintomo</th><th>Causa e rimedio</th></tr>
+<tr><td>Windows blocca l'exe</td><td>Exe non firmato: SmartScreen →
+«Esegui comunque»; zip scaricato → Proprietà → Sblocca. Smart App
+Control non ammette eccezioni: solo disattivazione
+(irreversibile).</td></tr>
+<tr><td>L'app non vede il gioco</td><td>LMU acceso? Plugin shared
+memory attivo (<a href="#plugin">vedi</a>)? REST sulla 6397:
+<code>http://localhost:6397/swagger-schema.json</code> deve
+rispondere a gioco acceso.</td></tr>
+<tr><td>Overlay invisibili</td><td>Accesi nella pagina Overlay? Gioco
+in <b>Borderless</b> (il fullscreen esclusivo li copre)?</td></tr>
+<tr><td>Il garage non scrive</td><td>Funziona ai box a gioco vivo;
+negli eventi fixed solo le voci libere.</td></tr>
+<tr><td>Niente voce</td><td>Ingegnere acceso nelle Options? La prima
+frase può tardare qualche secondo (sintesi vocale).</td></tr>
+<tr><td>Prima apertura lenta</td><td>Antivirus sull'exe appena
+installato + cache fredde: dalla seconda volta è normale.</td></tr>
+</table>
+
+<footer>
+LMU Telemetry Pro — progetto della community, non affiliato a Studio
+397 / Motorsport Games. I dati mostrati provengono esclusivamente da
+Le Mans Ultimate: dove il gioco non fornisce un dato, l'app preferisce
+tacere piuttosto che inventare.
+</footer>
+</div>
+
+<!-- ══════════════════════════ ENGLISH ══════════════════════════ -->
+<div class="lang-en">
+
+<h1>LMU Telemetry Pro</h1>
+<p class="lead">Voice pit wall, professional telemetry, live garage and
+broadcast overlays for <b>Le Mans Ultimate</b>. Free, open source,
+community made. Founding rule: <b>every figure comes from the
+game</b> — what LMU doesn't say, the app doesn't invent.</p>
+<table>
+<tr><th>Component</th><th>What it does</th></tr>
+<tr><td><b>App</b></td><td>Sessions, telemetry, garage, standings,
+options.</td></tr>
+<tr><td><b>Pit wall</b></td><td>Voice engineer: strategy, consumption,
+tyres, rain, flags, penalties.</td></tr>
+<tr><td><b>Overlays</b></td><td>WEC-broadcast-style graphics over the
+game, each in its own process.</td></tr>
+<tr><td><b>Community</b></td><td>Online standings between app users:
+references, hyperpole, Race Weekly.</td></tr>
+</table>
+
+<h2>Installation</h2>
+<ol>
+<li>Download the zip from the latest
+<a href="https://github.com/xvb-lab/Telemetry_Pro_Muretto/releases">GitHub
+release</a>.</li>
+<li>Unzip anywhere — keep the folder <b>intact</b> (the exe needs its
+<code>_internal</code>).</li>
+<li>Run <code>LMU_TelemetryPro.exe</code>.</li>
+</ol>
+<div class="box warn"><b>Windows blocks the app?</b>
+The exe is not digitally signed. <b>SmartScreen</b>: “More info” →
+“Run anyway”; or, before unzipping, right-click the zip → Properties →
+<b>Unblock</b>. <b>Smart App Control</b> (recent Windows 11) blocks
+unsigned exes with <i>no</i> per-file exception: it can only be turned
+off in Windows Security → App &amp; browser control (irreversible —
+your call).</div>
+
+<h3>The LMU plugin (shared data)</h3>
+<p>The app reads the game through two channels: LMU's built-in
+<b>REST API</b> (port <code>6397</code>, on by default — nothing to
+do) and the <b>shared memory</b>, which requires the
+<code>rFactor2SharedMemoryMapPlugin64.dll</code> plugin — the same one
+used by TinyPedal, SimHub and friends. If any of those already works
+for you, you're set.</p>
+<p><b>Two-step check</b> (standard Steam paths):</p>
+<ol>
+<li>Does
+<code>...\steamapps\common\Le Mans Ultimate\Plugins\rFactor2SharedMemoryMapPlugin64.dll</code>
+exist? If not, download it from the
+<a href="https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin">rF2
+Shared Memory Map Plugin</a> project (64-bit build) and copy it
+there.</li>
+<li>Open
+<code>...\Le Mans Ultimate\UserData\player\CustomPluginVariables.JSON</code>
+and make sure the plugin is enabled:
+<pre>"rFactor2SharedMemoryMapPlugin64.dll": {
+    " Enabled": 1,
+    ...
+}</pre>
+If it reads <code>0</code>, set it to <code>1</code> with the game
+closed (or enable it from the game's plugin menu, which writes this
+same file).</li>
+</ol>
+<div class="box ok"><b>How do I know it works?</b> Start the game,
+join a session, start the app: if the live session hooks up by
+itself, both channels are talking. If in doubt, with the game running
+open <code>http://localhost:6397/swagger-schema.json</code> in a
+browser: a response means the REST is up.</div>
+
+<h3>Game window</h3>
+<p>To see overlays <b>on top</b> of the game, set LMU to
+<b>Borderless</b> (or Windowed) in the video settings — exclusive
+fullscreen won't let other windows sit in front. With multiple
+monitors you can keep overlays on one screen and the game on the
+other.</p>
+
+<h2>First run</h2>
+<ul>
+<li>No setup needed: open the app, open the game, drive. The app
+<b>detects the session by itself</b> and records every lap.</li>
+<li>The <b>intro video</b> skips with ENTER and can be disabled in
+Options.</li>
+<li>Music, effects and volume live in Options; music fades out by
+itself when you enter a session.</li>
+<li>The <b>language</b> (EN/IT) is picked in Options via the flags;
+applies at restart.</li>
+<li>The very first open of some pages is slower (antivirus inspecting
+the freshly installed exe); from the second time on everything is
+instant.</li>
+</ul>
+
+<h2>Every page, one by one</h2>
+<h3>Home</h3>
+<p>Top: your driver card — licence and safety, helmet (the <b>+</b>
+opens <b>Gadgets</b>), name, session and community counters, last
+session with a reopen arrow. Centre: the <b>online event cards</b>
+(NOW / UPCOMING, nation filters, CHAMPIONSHIP, ALL, EXTRA). Bottom:
+the footer with quick switches.</p>
+<h3>Gadgets (helmets)</h3>
+<p>Your helmet collection: the ones <b>unlocked</b> by your career
+score are visible and wearable with a click (they go on your profile
+and your online records); the <b>locked</b> ones stay mysterious — a
+“?” box with a red padlock — and reveal themselves as your score
+grows.</p>
+<h3>Circuit menu and circuit page</h3>
+<p>From home you enter the circuits menu: photo cards for every track
+and layout. Each circuit page has the <b>real map</b> (recorded on
+track: sectors, numbered corners, LICO braking points toggled from
+the legends) and a right column with the standings (see
+<a href="#raceweekly">community</a>), the event <b>rules</b> and the
+<b>track diary</b>: what the app knows about that circuit — map,
+corners census, LICO, learned consumption profile, personal bests,
+race record, sessions.</p>
+<h3>Sessions / Stint</h3>
+<p>Life on track: session cards on the left, the stint/lap board on
+the right. Garage, stint and telemetry open from here. During a live
+session the page hooks up by itself.</p>
+<h3>Options</h3>
+<p>Language, music and volume, effects, intro video, overlay lock,
+engineer on/off, per-page tweaks.</p>
+
+<h2>Sessions: where and how</h2>
+<ul>
+<li>Every outing creates a <b>session</b> (local file in
+<code>%APPDATA%\LMU_TelemetryPro\logs</code>): laps, sectors, weather,
+tyres, consumption, position — everything the game exposes, sampled
+at 64 Hz.</li>
+<li>Cards filter by track, layout and class. A session with no timed
+lap is not shown.</li>
+<li>On the board, a lap's <b>circle</b> selects it (<b>SEL</b>); a
+second lap becomes the compare (<b>CMP</b>). Opposite-condition laps
+(dry/wet) are dimmed: only like-for-like comparisons.</li>
+<li><b>Team</b>: sessions export/import as zip to share with your
+squad.</li>
+</ul>
+
+<h2>Analysing telemetry</h2>
+<ul>
+<li><b>Worksheet</b>: several stacked channels (speed, steering,
+gear, pedals…), all in sync.</li>
+<li><b>Dedicated channels</b>: Speed, Steering, Gear, RPM, Tyres,
+Brakes, Suspension, Pedals, G-G, Aids (TC/ABS/bias), Delta, VE /
+Fuel / Hybrid consumption.</li>
+<li><b>Scrub</b>: move the mouse over a chart or the map — the line
+follows, the map highlights the spot, you read exact values.</li>
+<li><b>A/B cursors</b>: <kbd>Shift</kbd>+click places A (orange), a
+second click places B (cyan); top right shows ΔX in metres and the
+channel Δ. Zoom and cursors are synced across all charts.</li>
+<li><b>Per-wheel tyres</b>: corner (FL/FR/RL/RR) + layer (Surface /
+Carcass / Inner / pressure / wear), with track °C and rain % along
+the lap.</li>
+<li><b>Replay</b>: play on the real map, the car marker synced with
+the charts, up to 8×.</li>
+<li><b>REF</b>: compare with your local best or the community
+reference (class + track + condition; gold = dry, blue = wet).</li>
+<li><b>Debrief</b>: the engineer's report on the session — driving,
+grip &amp; dampers, fastest laps.</li>
+</ul>
+
+<h2>Live Garage</h2>
+<p>The garage <b>really writes into the game</b> via REST, as if you
+used its own menu — but with a single view and team automations.</p>
+<ul>
+<li><b>Setup sheet</b> in tabs (Transmission, Wheels &amp; brakes,
+Suspension, Dampers, Chassis &amp; aero): ‹ › arrows on every entry,
+live values from the game, non-adjustable entries dimmed, per-section
+RESET.</li>
+<li><b>Tyres</b>: the car top-down with the four mounted tyres
+(compound, wear, temperature). Click a wheel → set menu for that
+corner; <b>FIT ALL ×4</b> mounts a fresh compound everywhere. The
+stock lists the event's sets with wear and codes.</li>
+<li><b>Mechanic</b>: the log on the left — every change written
+(“Brake bias 52.3 → 53.5”), automations narrated.</li>
+<li><b>Automations</b> (garage Options tab): AUTO SETUP (applies the
+engineer's advice), AUTO TYRES (right set on session change), AUTO
+FUEL/ENERGY (fuel or energy for the session: quali = counted laps,
+light car; race = laps + formation + the flag lap), AUTO WET (rain:
+more TC/ABS, softer power).</li>
+<li><b>Practice test</b>: pick a run — hotlap, long run… — and the
+crew preps the car for that duration.</li>
+<li><b>Saved setups</b>: per car+track snapshots in the Setups
+tab.</li>
+<li><b>Fixed-setup events</b> (online): the garage honours, entry by
+entry, what the server declares free — typically energy/fuel, brake
+bias, compounds and electronics stay live, the rest shows the
+“Fixed setup — locked” badge.</li>
+</ul>
+<h3>What it does NOT do (by design)</h3>
+<ul>
+<li><b>No topping up from the UI on track</b>: in the garage you
+<i>set</i> the fuel you need; refuelling belongs to the pit stop, in
+the game.</li>
+<li><b>No invented setups</b>: no magic per-track setup tables — the
+advice comes from YOUR telemetry, and the mechanic applies it only if
+you allow it (AUTO SETUP).</li>
+<li><b>No writing with the game closed</b>: without LMU running the
+garage just displays.</li>
+</ul>
+
+<h2>The engineer (pit wall)</h2>
+<p>A <b>voice</b> race engineer: reads your telemetry live and talks
+over the radio. Toggled from Options / the Overlay page, and runs in
+a separate process — it doesn't steal smoothness from the app.</p>
+<ul>
+<li><b>Strategy</b>: at the start it works out laps, stints, stops,
+range — on your car's real consumption, not category estimates.</li>
+<li><b>Management</b>: pace and consumption checks, where you're
+losing (sectors vs your best), periodic tyre/fuel report, smart box
+calls (worn tyres, puncture, low fuel, penalties, damage).</li>
+<li><b>Rain</b>: warns as it starts, calls wets on how wet the track
+is <i>under your wheels</i>, fuel at the stop, wettest sector, slick
+window on the drying line. If you stay out, it acknowledges and
+supports.</li>
+<li><b>Flags</b>: yellow only with a slow car within 500 m ahead
+(never for far-away sectors), blues in trains, gaps and undercut
+alerts.</li>
+<li><b>Penalties</b>: announces only <b>yours</b>, with type and
+procedure; rivals' penalties are quoted for strategy, by name.</li>
+<li><b>It learns</b>: per track and class it stores consumption,
+degradation, best and sectors (dry and wet apart). The more clean
+laps, the sharper it gets.</li>
+</ul>
+<div class="box"><b>Philosophy</b> — the wall <b>informs, the driver
+decides</b>: hard orders are reserved for safety (mandatory wets,
+puncture, heavy damage). Never advice against the car's actual
+state.</div>
+<h3>Session by session</h3>
+<table>
+<tr><th>Session</th><th>What it does</th><th>What it doesn't</th></tr>
+<tr><td><b>Practice</b></td><td>Sector references, tyre/brake
+readings, preps the garage-chosen tests; learns track and
+consumption.</td><td>No race strategy, no strategic box
+calls.</td></tr>
+<tr><td><b>Qualifying</b></td><td>Lap and sector references; the
+mechanic loads energy for the attempts (out-lap +
+attempts).</td><td>No small talk: the radio stays essential.</td></tr>
+<tr><td><b>Race</b></td><td>Strategy briefing, full management, rain,
+flags, penalties, stops, race end.</td><td>Doesn't decide for you:
+it advises; the hard “box box box” is safety only.</td></tr>
+</table>
+
+<h2>The overlays, one by one</h2>
+<p>Toggled from the <b>Overlay</b> page; each is its own process, drag
+it anywhere, the padlock at the top locks positions. They are
+<b>always in English</b> (broadcast style). Each has its own config
+card (size, options).</p>
+<table>
+<tr><th>Overlay</th><th>Shows</th><th>Per-session notes</th></tr>
+<tr><td><b>Leaderboard</b></td><td>WEC-style standings: class
+colours, sector ticks, pits and tyres, battles with live gaps,
+rotating pages (compounds, energy, grid, presentation).</td>
+<td>Race: opening lap with full names, gaps from lap 2; practice/
+quali: times and runs.</td></tr>
+<tr><td><b>Current Gap</b></td><td>The duel: who's ahead and behind
+with live gaps, recent laps, positions up/down, tyres, energy,
+driver flags.</td><td>In practice/quali gaps are on bests.</td></tr>
+<tr><td><b>Ticker</b></td><td>The scrolling bar with every car's
+interval, TV style.</td><td>—</td></tr>
+<tr><td><b>Dashboard</b></td><td>Gear, speed, per-wheel tyres and
+brakes coloured by their real windows, consumption, paged MFD (its
+own language).</td><td>—</td></tr>
+<tr><td><b>Race Control</b></td><td>Race direction: penalties (yours
+only), track limits with the game's real points, verdicts.</td>
+<td>In practice/quali it flags the invalidated lap.</td></tr>
+<tr><td><b>Standings / Relative</b></td><td>Compact standings and
+the gaps around you, with WEC sectors.</td><td>—</td></tr>
+<tr><td><b>Map</b></td><td>The real track with live car
+markers.</td><td>—</td></tr>
+<tr><td><b>Onboard / Mini telemetry / Flag / 2024 bars</b></td>
+<td>Onboard frame, pedal mini-charts, on-screen flags, side
+tools.</td><td>The yellow flag follows the 500 m-ahead rule.</td></tr>
+</table>
+
+<h2>Online events</h2>
+<ul>
+<li>The home cards show upcoming LMU events; inside an event the app
+hooks practice, qualifying and race by itself.</li>
+<li>In <b>fixed-setup</b> events the garage honours the server's free
+entries (see the Garage chapter).</li>
+<li><b>Results count</b>: online qualifying and races feed the
+community standings and the Race Weekly. Practice doesn't.</li>
+<li>Your nationality <b>flag</b> (from your LMU profile) shows next
+to your name; opponents who use the app publish theirs — the game
+doesn't expose other drivers' nationality, and the app doesn't
+invent.</li>
+</ul>
+
+<h2>Race Weekly &amp; community</h2>
+<p>Three standings on the circuit page:</p>
+<table>
+<tr><th>View</th><th>Content</th></tr>
+<tr><td>🌐 <b>Community — Reference</b></td><td>All-time bests of app
+users, per class and condition.</td></tr>
+<tr><td>⏱ <b>Weekly Hyperpole</b></td><td>The fastest single
+qualifying lap of the week, online; weekly reset.</td></tr>
+<tr><td>🏆 <b>Race Weekly</b></td><td>The weekly points
+championship.</td></tr>
+</table>
+<h3>The Race Weekly rulebook</h3>
+<ul>
+<li><b>3 attempts</b> per week, per track and class.</li>
+<li><b>One attempt = one whole event</b>: race points from the finish
+position (P1 25 · P2 18 · P3 15 · P4 12 · P5 10 · P6 8 · P7 6 · P8 4
+· P9 2 · P10 1) <b>plus</b> the hyperpole bonus from that same
+event's qualifying (P1 10 · P2 9 · … · P10 1).</li>
+<li>Your <b>best whole attempt</b> counts, with that attempt's car.
+No mixing across events: a P2 with no hyperpole (18) loses to a P4
+with a strong quali (12+8=20). On a tie, the most recent attempt
+wins.</li>
+<li>Results build your <b>rating</b>, licence (Rookie→Pro, helmet
+colour) and <b>safety</b> (contacts weigh in).</li>
+</ul>
+
+<h2>Language &amp; options</h2>
+<ul>
+<li><b>App language</b>: Options → 🇬🇧/🇮🇹 flags, applies at restart.
+Technical shorthand (TC, ABS, bias, compounds) never translates;
+overlays stay English; the radio speaks Italian.</li>
+<li><b>Dashboard</b>: its own language, from the overlay's menu.</li>
+<li><b>Music / effects / intro / overlay lock</b>: all in
+Options.</li>
+</ul>
+
+<h2>Troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause and fix</th></tr>
+<tr><td>Windows blocks the exe</td><td>Unsigned exe: SmartScreen →
+“Run anyway”; downloaded zip → Properties → Unblock. Smart App
+Control allows no exceptions: off only (irreversible).</td></tr>
+<tr><td>The app can't see the game</td><td>LMU running? Shared memory
+plugin enabled (see the plugin chapter)? REST on 6397:
+<code>http://localhost:6397/swagger-schema.json</code> must answer
+with the game up.</td></tr>
+<tr><td>Overlays invisible</td><td>Enabled in the Overlay page? Game
+in <b>Borderless</b> (exclusive fullscreen covers them)?</td></tr>
+<tr><td>Garage won't write</td><td>Works in the pits with the game
+live; in fixed events only the free entries.</td></tr>
+<tr><td>No voice</td><td>Engineer enabled in Options? First sentence
+can take a few seconds (speech synthesis).</td></tr>
+<tr><td>Slow first open</td><td>Antivirus scanning the fresh exe +
+cold caches: from the second time on it's normal.</td></tr>
+</table>
+
+<footer>
+LMU Telemetry Pro — a community project, not affiliated with Studio
+397 / Motorsport Games. Every figure shown comes from Le Mans
+Ultimate: where the game provides no data, the app prefers silence
+over invention.
+</footer>
+</div>
 
 </main>
 
-<footer>
-  <div class="wrap">
-    <span lang="en">LMU Telemetry Pro · by Jonathan Sanfilippo · Not affiliated with
-      Studio 397, Motorsport Games or the FIA WEC.</span>
-    <span lang="it">LMU Telemetry Pro · di Jonathan Sanfilippo · Non affiliato a
-      Studio 397, Motorsport Games o FIA WEC.</span>
-    · <a href="https://github.com/xvb-lab/Telemetry_Pro">GitHub</a>
-  </div>
-</footer>
-
 <script>
 function setLang(l){
-  document.body.dataset.lang = l;
-  document.documentElement.lang = l;
-  document.getElementById('b-en').setAttribute('aria-pressed', l === 'en');
-  document.getElementById('b-it').setAttribute('aria-pressed', l === 'it');
+  document.body.className = l;
+  document.getElementById('btn-it').className = (l==='it') ? 'on' : '';
+  document.getElementById('btn-en').className = (l==='en') ? 'on' : '';
   try{ localStorage.setItem('tp_lang', l); }catch(e){}
 }
 try{
-  var s = localStorage.getItem('tp_lang');
-  if (s) setLang(s);
-  else if ((navigator.language || '').toLowerCase().startsWith('it')) setLang('it');
+  var saved = localStorage.getItem('tp_lang');
+  if(saved === 'en' || saved === 'it') setLang(saved);
+  else if((navigator.language||'').toLowerCase().indexOf('it') !== 0)
+    setLang('en');
 }catch(e){}
 </script>
 </body>
